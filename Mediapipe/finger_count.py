@@ -20,7 +20,7 @@ while True:
 
     lmlist = []
     finger = []
-    #print(results.multi_hand_landmarks)
+    
 
     if results.multi_hand_landmarks:
         hand_label = results.multi_handedness[0].classification[0].label
