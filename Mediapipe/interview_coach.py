@@ -128,7 +128,7 @@ def speak_async(text):
     global speech_thread
 
     if speech_thread and speech_thread.is_alive():
-        return  # prevent overlapping speech
+        return  
 
     speech_thread = threading.Thread(
         target=speak,
@@ -248,7 +248,7 @@ def pose_capture(question,counter):
 
     while True:
         time_diff = time.time() - time_now
-        if time_diff >= 10:
+        if time_diff >= 60:
             return True
             
         suc,raw = video.read()
