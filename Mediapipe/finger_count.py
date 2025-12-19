@@ -1,5 +1,11 @@
 import mediapipe as mp
 import cv2
+import pyttsx3 
+
+engine = pyttsx3.init()
+voice=engine.getProperty('voices')
+engine.setProperty('voice',voice[1].id)
+engine.setProperty('volume',0.9)
 
 mphands = mp.solutions.hands
 mpdrawing = mp.solutions.drawing_utils
@@ -9,8 +15,20 @@ hands = mphands.Hands(max_num_hands = 1)
 
 video = cv2.VideoCapture(0)
 
-
+counter = 0
 tip = [8,12,16,20]
+
+
+def gestures(gest):
+    all_gest = {
+        (0,0,0,0,0): "Idi medikkum",
+        (1,1,1,1,1): "Lal, Salaam",
+        (0,1,0,0,0): "Point",
+        (1,0,0,0,0): "Thumbs up",
+        (0,1,1,0,0): "Peace",
+        (1,1,0,0,1): "Rock"
+    }
+    return all_gest.get(tuple(gest),"Unknown")
 
 while True:
     suc,raw = video.read()
@@ -19,7 +37,7 @@ while True:
     results = hands.process(img)
 
     lmlist = []
-    finger = []
+    finger = [5,5,5,5,5]
     
 
     if results.multi_hand_landmarks:
@@ -31,15 +49,27 @@ while True:
             mpdrawing.draw_landmarks(raw,handms,mphands.HAND_CONNECTIONS,mpdrawing.DrawingSpec(color = (0,0,255),thickness = 1))
 
     if len(lmlist)>0 and hand_label == 'Right':
-        finger.append(lmlist[4][1] < lmlist[4-2][1])
+        finger = []
+        if lmlist[4][1] < lmlist[4-2][1]:
+            finger.append(1)
+        else:
+            finger.append(0)
         for i in tip:
-            finger.append(lmlist[i][2] < lmlist[i-2][2])
-    count = finger.count(True)
+            if lmlist[i][2] < lmlist[i-2][2]:
+                finger.append(1)
+            else:
+                finger.append(0)
+    count = finger.count(1)
+    print(finger)
     
 
-        
+    gest = gestures(finger)
             
-    cv2.putText(raw,f"FInger Count :{str(count)}",(100,100),cv2.FONT_HERSHEY_COMPLEX,1,(255,0,0),2)
+    cv2.putText(raw,f"Gesture :{gest}",(100,100),cv2.FONT_HERSHEY_COMPLEX,1,(255,0,0),2)
+    if counter % 15 == 0 and gest != 'Unknown':
+        engine.say(gest)
+        engine.runAndWait()
+    counter +=1
     
     cv2.imshow("Finger Count",raw)
 
